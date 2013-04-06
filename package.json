@@ -1,0 +1,10 @@
+{
+  "name": "websocket-whiteboard-example",
+  "description": "Websocket-node example.",
+  "author": "John Shearer <john@ultranaut.com> (https://www.ultranaut.com/)",
+  "version": "0.1.0",
+  "dependencies": {
+    "express": "~2",
+    "websocket": "*"
+  }
+}

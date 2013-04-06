@@ -1,0 +1,45 @@
+body {
+  font-family: sans-serif;
+}
+
+#main {
+  margin: 10px;
+}
+
+#conversation {
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+#conversation .display {
+  height: 400px;
+  border: solid 1px #ccc;
+  margin: 15px 0;
+  -webkit-border-radius: 8px;
+          border-radius: 8px;
+}
+.display .comment {
+  margin: 1em;
+}
+.display .user {
+  display: inline-block;
+  margin-right: 0.5em;
+}
+.display .user:after {
+  content: ": ";
+}
+.display .copy {
+  display: inline-block;
+}
+
+#conversation .input {
+  width: 90%;
+  padding: 4px 12px;
+  border: solid 1px #ccc;
+  outline: none;
+
+  -webkit-border-radius: 8px;
+          border-radius: 8px;
+}
+
+#conversation .send {}
