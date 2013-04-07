@@ -20,7 +20,7 @@ Chat.prototype.connect = function (host) {
 
 Chat.prototype.handleMessage = function (message) {
   "use strict";
-  var data;
+  var data, init;
   try {
     data = JSON.parse(message.data);
   }
@@ -29,10 +29,15 @@ Chat.prototype.handleMessage = function (message) {
   }
 
   if (data) {
-    if (data.conversation) {
-      for (var i = 0, len = data.conversation.length; i < len; i++) {
-        var item = data.conversation[i];
-        this.displayComment(item.msg);
+    if (data.init) {
+      console.debug(message.data);
+      init = data.init;
+      this.connectionId = init.connectionId;
+      if (init.conversation) {
+        for (var i = 0, len = init.conversation.length; i < len; i++) {
+          var item = init.conversation[i];
+          this.displayComment(item.msg);
+        }
       }
     }
     else if (data.msg) {
@@ -42,11 +47,12 @@ Chat.prototype.handleMessage = function (message) {
 };
 
 Chat.prototype.displayComment = function (msg) {
+  console.debug(msg);
   var output = document.createElement("div");
   output.className = "comment";
   var user = document.createElement("div");
   user.className = "user";
-  user.innerHTML = msg.user;
+  user.innerHTML = msg.connectionId;
   output.appendChild(user);
   var copy = document.createElement("div");
   copy.className = "copy";
@@ -77,6 +83,7 @@ Chat.prototype.handleSubmit = function (e) {
   if (input) {
     var message = {
       msg: {
+        connectionId: this.connectionId,
         user: "john",
         copy: input
       }
