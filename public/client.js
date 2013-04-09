@@ -1,23 +1,76 @@
+/* jshint node: true */
+
 function Chat(el, host) {
   "use strict";
   this.initChat(el);
-  this.connect(host);
+  this.addChatEventListeners();
+  //this.connect(host);
 }
 
-Chat.prototype.connect = function (host) {
+Chat.prototype.initChat = function (rootElement) {
   "use strict";
+  var container = document.getElementById(rootElement);
+  var login = document.getElementById("login");
 
-  // if host is provided use that, otherwise use the document's url
-  var url = "ws://" + (host || document.URL.substr(7).split('/')[0]);
+  this.login = login;
+  this.nickname = login.querySelector(".nickname");
+  this.connect = login.querySelector(".connect");
 
-  var WebSocket = window.MozWebSocket ? window.MozWebSocket : window.WebSocket;
-  this.socket = new WebSocket(url, "chat");
-  this.socket.onmessage = this.handleMessage.bind(this);
-  this.socket.onclose = this.handleClose.bind(this);
+  this.container = container;
+  this.display   = container.querySelector(".display");
+  this.input     = container.querySelector(".input");
+  this.send      = container.querySelector(".send");
 
+};
+
+Chat.prototype.addChatEventListeners = function () {
+  "use strict";
+  this.connect.addEventListener("click", this.handleConnect.bind(this), false);
   this.send.addEventListener("click", this.handleSubmit.bind(this), false);
 };
 
+Chat.prototype.handleConnect = function (host) {
+  "use strict";
+
+  if (!this.nickname.value) {
+    return;
+  }
+
+
+  this.socket = io.connect("http://localhost:1337");
+
+  this.socket.on("pushMessage", function (data) {
+    console.log(data);
+    var output = document.createElement("div");
+    output.className = "comment";
+    var user = document.createElement("div");
+    user.className = "user";
+    user.innerHTML = data.user;
+    output.appendChild(user);
+    var copy = document.createElement("div");
+    copy.className = "copy";
+    copy.innerHTML = data.message;
+    output.appendChild(copy);
+
+    this.display.appendChild(output);
+  }.bind(this));
+  this.socket.on("connect", function () {
+    console.log(this.nickname.value);
+    this.socket.emit("setNickname", this.nickname.value);
+  }.bind(this));
+};
+
+Chat.prototype.handleSubmit = function (e) {
+  "use strict";
+  var input = this.input.value;
+  if (input) {
+    this.socket.emit("newMessage", {message: input});
+  }
+  this.input.value = '';
+  return false;
+};
+
+/*
 Chat.prototype.handleMessage = function (message) {
   "use strict";
   var data, init;
@@ -25,7 +78,7 @@ Chat.prototype.handleMessage = function (message) {
     data = JSON.parse(message.data);
   }
   catch (e) {
-    /* do nothing */
+    // do nothing
   }
 
   if (data) {
@@ -67,32 +120,5 @@ Chat.prototype.handleClose = function () {
   //alert("WebSocket Connection Closed.");
 };
 
-Chat.prototype.initChat = function (el) {
-  "use strict";
-  var container = document.getElementById(el);
 
-  this.container = container;
-  this.display   = container.querySelector(".display");
-  this.input     = container.querySelector(".input");
-  this.send      = container.querySelector(".send");
-};
-
-Chat.prototype.handleSubmit = function (e) {
-  "use strict";
-  var input = this.input.value;
-  if (input) {
-    var message = {
-      msg: {
-        connectionId: this.connectionId,
-        user: "john",
-        copy: input
-      }
-    };
-    this.socket.send(JSON.stringify(message));
-  }
-  this.input.value = '';
-};
-
-Chat.prototype.addChatEventListeners = function () {
-  "use strict";
-};
+*/

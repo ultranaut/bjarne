@@ -4,24 +4,25 @@
   <meta charset="utf-8">
   <title>Oh look, it's a websocket chat thing</title>
   <meta name="viewport" content="width=device-width">
-  <script src="/client.js"></script>
   <link rel="stylesheet" href="/client.css">
 </head>
 <body>
 <div id="main">
   <div id="conversation">
+    <div id="login">
+      <input type="text" class="nickname" placeholder="name"/>
+      <button class="connect">connect</button>
+    </div>
     <div class="display"></div>
     <input type="text" class="input"/>
     <button class="send">send</button>
   </div>
 </div>
+  <script src="http://localhost:1337/socket.io/socket.io.js"></script>
+  <script src="/client.js"></script>
   <script>
     window.addEventListener("load", function () {
-      "use strict";
-      var el = "conversation";
-      var host = "localhost:8080";
-      var client = new Chat(el, host);
-      window.client = client;
+      window.client = new Chat("conversation");
     }, false);
   </script>
 </body>
