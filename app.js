@@ -12,8 +12,7 @@ app.listen(8080);
 
 
 var chatServer = (function (io) {
-  var connectionId = 0;
-  var connections = {};
+  var connections = [];
   var conversation = [];
 
   var server = io.listen(1337);
@@ -26,10 +25,12 @@ var chatServer = (function (io) {
    */
   server.set("log level", 2);
   server.sockets.on("connection", function (socket) {
+    connections.push(socket);
     socket.on("setNickname", function (name) {
       socket.set('nickname', name);
       socket.emit("initConversation", conversation);
-      console.log(this);
+      socket.emit("updateUserList", listUsers());
+      socket.broadcast.emit("updateUserList", listUsers());
     });
     socket.on('newMessage', function (data) {
       socket.get("nickname", function (err, name) {
@@ -42,59 +43,16 @@ var chatServer = (function (io) {
     });
   });
 
+  function listUsers() {
+    var userList = [];
+    for (var i = 0, len = connections.length; i < len; i++) {
+      if (connections[i].store.data.nickname) {
+        userList.push(connections[i].store.data.nickname);
+      }
+    }
+    return userList;
+  }
   return server;
 }(io));
 
-
-/*
-var chatServer = (function (httpServer) {
-  var connectionId = 0;
-  var conversation = [];
-
-  var server = new WebSocketServer({
-    httpServer: httpServer
-  });
-
-  server.on('request', function (request) {
-    var connection = request.accept("chat", request.origin);
-
-    console.log(connection.remoteAddress, "connected - Protocol Version", connection.webSocketVersion);
-
-    var connectData = {};
-    connectData.connectionId = "conn_" + connectionId++;
-    connectData.conversation = conversation;
-
-    // bring new connection up-to-date
-    connection.sendUTF(JSON.stringify({init: connectData}));
-
-    // Handle closed connections
-    connection.on('close', function () {
-      var connections = chatServer.connections;
-      console.log(connection.remoteAddress + " disconnected");
-
-      var index = connections.indexOf(connection);
-      if (index !== -1) {
-        connections.splice(index, 1);
-      }
-    });
-
-    // Handle incoming messages
-    connection.on('message', function (message) {
-      if (message.type === 'utf8') {
-        try {
-          console.log("received: ", message);
-          var comment = JSON.parse(message.utf8Data);
-          chatServer.broadcast(message.utf8Data);
-          conversation.push(JSON.parse(message.utf8Data));
-        }
-        catch (e) {
-          console.log(e);
-        }
-      }
-    });
-  });
-
-  return server;
-}(app));
-*/
 console.log("Chat is go...");

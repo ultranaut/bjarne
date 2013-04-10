@@ -18,6 +18,7 @@ Chat.prototype.initChat = function (rootElement) {
 
   this.container = container;
   this.display   = container.querySelector(".display");
+  this.users     = container.querySelector(".users");
   this.input     = container.querySelector(".input");
   this.send      = container.querySelector(".send");
 
@@ -48,6 +49,21 @@ Chat.prototype.handleConnect = function (host) {
     for (var i = 0, len = data.length; i < len; i++) {
       this.displayMessage(data[i]);
     }
+  }.bind(this));
+  this.socket.on("updateUserList", function (data) {
+    var userdiv;
+    this.users.innerHTML = '';
+    for (var i = 0, len = data.length; i < len; i++) {
+      if (!data[i]) {
+        continue;
+      }
+      userdiv = document.createElement("div");
+      userdiv.classname = "user";
+      userdiv.innerHTML = data[i];
+      this.users.appendChild(userdiv);
+    }
+
+    console.debug(data);
   }.bind(this));
 };
 
