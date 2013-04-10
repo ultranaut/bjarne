@@ -18,22 +18,26 @@ var chatServer = (function (io) {
 
   var server = io.listen(1337);
   /*
-  * level of detail output to logger
-  * 0 - error
-  * 1 - warn
-  * 2 - info
-  * 3 - debug (default)
-  */
+   * level of detail output to logger
+   * 0 - error
+   * 1 - warn
+   * 2 - info
+   * 3 - debug (default)
+   */
   server.set("log level", 2);
   server.sockets.on("connection", function (socket) {
     socket.on("setNickname", function (name) {
       socket.set('nickname', name);
+      socket.emit("initConversation", conversation);
+      console.log(this);
     });
     socket.on('newMessage', function (data) {
       socket.get("nickname", function (err, name) {
+        var message = {user: name, message: data.message};
+        conversation.push(message);
         /* TODO: do I really need to do this twice? */
-        socket.emit("pushMessage", {user: name, message: data.message});
-        socket.broadcast.emit("pushMessage", {user: name, message: data.message});
+        socket.emit("pushMessage", message);
+        socket.broadcast.emit("pushMessage", message);
       });
     });
   });

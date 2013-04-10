@@ -39,25 +39,32 @@ Chat.prototype.handleConnect = function (host) {
 
   this.socket = io.connect("http://localhost:1337");
 
-  this.socket.on("pushMessage", function (data) {
-    console.log(data);
-    var output = document.createElement("div");
-    output.className = "comment";
-    var user = document.createElement("div");
-    user.className = "user";
-    user.innerHTML = data.user;
-    output.appendChild(user);
-    var copy = document.createElement("div");
-    copy.className = "copy";
-    copy.innerHTML = data.message;
-    output.appendChild(copy);
-
-    this.display.appendChild(output);
-  }.bind(this));
+  this.socket.on("pushMessage", this.displayMessage.bind(this));
   this.socket.on("connect", function () {
     console.log(this.nickname.value);
     this.socket.emit("setNickname", this.nickname.value);
   }.bind(this));
+  this.socket.on("initConversation", function (data) {
+    for (var i = 0, len = data.length; i < len; i++) {
+      this.displayMessage(data[i]);
+    }
+  }.bind(this));
+};
+
+Chat.prototype.displayMessage = function (message) {
+  console.log(message);
+  var output = document.createElement("div");
+  output.className = "comment";
+  var user = document.createElement("div");
+  user.className = "user";
+  user.innerHTML = message.user;
+  output.appendChild(user);
+  var copy = document.createElement("div");
+  copy.className = "copy";
+  copy.innerHTML = message.message;
+  output.appendChild(copy);
+
+  this.display.appendChild(output);
 };
 
 Chat.prototype.handleSubmit = function (e) {
