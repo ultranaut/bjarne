@@ -1,147 +1,86 @@
 /* jshint node: true */
 
-function Chat(el, host) {
-  "use strict";
-  this.initChat(el);
-  this.addChatEventListeners();
-  //this.connect(host);
-}
+window.addEventListener("load", function () {
+  var chat = (function (el, host) {
+    "use strict";
 
-Chat.prototype.initChat = function (rootElement) {
-  "use strict";
-  var container = document.getElementById(rootElement);
-  var login = document.getElementById("login");
+    var socket;
 
-  this.login = login;
-  this.nickname = login.querySelector(".nickname");
-  this.connect = login.querySelector(".connect");
+    var chatDom = (function (chatRoot) {
+      var container = document.getElementById(chatRoot);
+      var login     = document.getElementById("login");
+      return {
+        nickname: login.querySelector(".nickname"),
+        connect:  login.querySelector(".connect"),
+        display:  container.querySelector(".display"),
+        users:    container.querySelector(".users"),
+        input:    container.querySelector(".input"),
+        send:     container.querySelector(".send")
+      };
+    }(el));
 
-  this.container = container;
-  this.display   = container.querySelector(".display");
-  this.users     = container.querySelector(".users");
-  this.input     = container.querySelector(".input");
-  this.send      = container.querySelector(".send");
+    var displayMessage = function (message) {
+      console.log(message);
+      var output = document.createElement("div");
+      output.className = "comment";
+      var user = document.createElement("div");
+      user.className = "user";
+      user.innerHTML = message.user;
+      output.appendChild(user);
+      var copy = document.createElement("div");
+      copy.className = "copy";
+      copy.innerHTML = message.message;
+      output.appendChild(copy);
 
-};
+      chatDom.display.appendChild(output);
+    };
 
-Chat.prototype.addChatEventListeners = function () {
-  "use strict";
-  this.connect.addEventListener("click", this.handleConnect.bind(this), false);
-  this.send.addEventListener("click", this.handleSubmit.bind(this), false);
-};
-
-Chat.prototype.handleConnect = function (host) {
-  "use strict";
-
-  if (!this.nickname.value) {
-    return;
-  }
-
-
-  this.socket = io.connect("http://localhost:1337");
-
-  this.socket.on("pushMessage", this.displayMessage.bind(this));
-  this.socket.on("connect", function () {
-    console.log(this.nickname.value);
-    this.socket.emit("setNickname", this.nickname.value);
-  }.bind(this));
-  this.socket.on("initConversation", function (data) {
-    for (var i = 0, len = data.length; i < len; i++) {
-      this.displayMessage(data[i]);
-    }
-  }.bind(this));
-  this.socket.on("updateUserList", function (data) {
-    var userdiv;
-    this.users.innerHTML = '';
-    for (var i = 0, len = data.length; i < len; i++) {
-      if (!data[i]) {
-        continue;
+    var updateUsers = function (data) {
+      var userdiv;
+      // sure there's not a better way to do this?
+      chatDom.users.innerHTML = '';
+      for (var i = 0, len = data.length; i < len; i++) {
+        userdiv = document.createElement("div");
+        userdiv.classname = "user";
+        userdiv.innerHTML = data[i];
+        chatDom.users.appendChild(userdiv);
       }
-      userdiv = document.createElement("div");
-      userdiv.classname = "user";
-      userdiv.innerHTML = data[i];
-      this.users.appendChild(userdiv);
-    }
+    };
 
-    console.debug(data);
-  }.bind(this));
-};
+    var handleSubmit = function (e) {
+      var input = chatDom.input.value;
+      if (input) {
+        socket.emit("newMessage", {message: input});
+      }
+      chatDom.input.value = '';
+      return false;
+    };
 
-Chat.prototype.displayMessage = function (message) {
-  console.log(message);
-  var output = document.createElement("div");
-  output.className = "comment";
-  var user = document.createElement("div");
-  user.className = "user";
-  user.innerHTML = message.user;
-  output.appendChild(user);
-  var copy = document.createElement("div");
-  copy.className = "copy";
-  copy.innerHTML = message.message;
-  output.appendChild(copy);
+    var handleConnect = function () {
+      if (!chatDom.nickname.value) {
+        return;
+      }
 
-  this.display.appendChild(output);
-};
+      socket = window.io.connect("http://localhost:1337");
 
-Chat.prototype.handleSubmit = function (e) {
-  "use strict";
-  var input = this.input.value;
-  if (input) {
-    this.socket.emit("newMessage", {message: input});
-  }
-  this.input.value = '';
-  return false;
-};
-
-/*
-Chat.prototype.handleMessage = function (message) {
-  "use strict";
-  var data, init;
-  try {
-    data = JSON.parse(message.data);
-  }
-  catch (e) {
-    // do nothing
-  }
-
-  if (data) {
-    if (data.init) {
-      console.debug(message.data);
-      init = data.init;
-      this.connectionId = init.connectionId;
-      if (init.conversation) {
-        for (var i = 0, len = init.conversation.length; i < len; i++) {
-          var item = init.conversation[i];
-          this.displayComment(item.msg);
+      socket.on("pushMessage", displayMessage);
+      socket.on("connect", function () {
+        console.log('connect event');
+        socket.emit("setNickname", chatDom.nickname.value);
+      });
+      socket.on("initConversation", function (data) {
+        for (var i = 0, len = data.length; i < len; i++) {
+          displayMessage(data[i]);
         }
-      }
-    }
-    else if (data.msg) {
-      this.displayComment(data.msg);
-    }
-  }
-};
+      });
+      socket.on("updateUserList", updateUsers);
+    };
 
-Chat.prototype.displayComment = function (msg) {
-  console.debug(msg);
-  var output = document.createElement("div");
-  output.className = "comment";
-  var user = document.createElement("div");
-  user.className = "user";
-  user.innerHTML = msg.connectionId;
-  output.appendChild(user);
-  var copy = document.createElement("div");
-  copy.className = "copy";
-  copy.innerHTML = msg.copy;
-  output.appendChild(copy);
+    var addChatEventListeners = function () {
+      chatDom.connect.addEventListener("click", handleConnect, false);
+      chatDom.send.addEventListener("click", handleSubmit, false);
+    };
+    addChatEventListeners();
 
-  this.display.appendChild(output);
-};
-
-Chat.prototype.handleClose = function () {
-  "use strict";
-  //alert("WebSocket Connection Closed.");
-};
-
-
-*/
+  }("conversation"));
+}, false);
