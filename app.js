@@ -5,7 +5,7 @@ var io = require('socket.io');
 
 var app = express();
 app.configure(function () {
-  app.use(express.static(__dirname + "/public"));
+  app.use(express.static(__dirname + '/public'));
   app.set('views', __dirname);
 });
 app.listen(8080);
@@ -23,22 +23,22 @@ var chatServer = (function (io) {
    * 2 - info
    * 3 - debug (default)
    */
-  server.set("log level", 2);
-  server.sockets.on("connection", function (socket) {
+  server.set('log level', 2);
+  server.sockets.on('connection', function (socket) {
     connections.push(socket);
-    socket.on("setNickname", function (name) {
+    socket.on('setNickname', function (name) {
       socket.set('nickname', name);
-      socket.emit("initConversation", conversation);
-      socket.emit("updateUserList", listUsers());
-      socket.broadcast.emit("updateUserList", listUsers());
+      socket.emit('initConversation', conversation);
+      socket.emit('updateUserList', listUsers());
+      socket.broadcast.emit('updateUserList', listUsers());
     });
     socket.on('newMessage', function (data) {
-      socket.get("nickname", function (err, name) {
+      socket.get('nickname', function (err, name) {
         var message = {user: name, message: data.message};
         conversation.push(message);
         /* TODO: do I really need to do this twice? */
-        socket.emit("pushMessage", message);
-        socket.broadcast.emit("pushMessage", message);
+        socket.emit('pushMessage', message);
+        socket.broadcast.emit('pushMessage', message);
       });
     });
   });
@@ -55,4 +55,4 @@ var chatServer = (function (io) {
   return server;
 }(io));
 
-console.log("Chat is go...");
+console.log('Chat is go...');
