@@ -1,0 +1,18 @@
+{
+  "name": "bjarne",
+  "description": "Chatty-ness",
+  "author": "John Shearer <john@ultranaut.com> (https://www.ultranaut.com/)",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ultranaut/bjarne/"
+  },
+  "dependencies": {
+    "socket.io": "0.9.x",
+    "socket.io-client": "0.9.x"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}

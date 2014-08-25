@@ -1,15 +1,6 @@
 /* jshint node: true */
 
-var express = require('express');
 var io = require('socket.io');
-
-var app = express();
-app.configure(function () {
-  app.use(express.static(__dirname + '/public'));
-  app.set('views', __dirname);
-});
-app.listen(8080);
-
 
 var chatServer = (function (io) {
   var connections = [];
