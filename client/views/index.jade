@@ -1,0 +1,19 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    title Oh look, it's a websocket chat thing
+    meta(name='viewport', content='initial-scale=1.0, width=device-width')
+    link(rel='stylesheet' href='/client.css')
+  body
+    div#main
+      div#conversation
+        div#login
+          input.nickname(type='text', placeholder='name')
+          button.connect connect
+        div.display
+        div.users
+        input.input(type='text')
+        button.send send
+      script(src='http://localhost:1337/socket.io/socket.io.js')
+      script(src='/client.js')
