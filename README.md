@@ -1,3 +1,3 @@
 # Read This
 ---
-Yup.
+A simplistic chat client/server using socket.io
